@@ -7,7 +7,8 @@
   "scripts": {
     "preinstall": "node -e \"if(process.version.slice(1).split('.')[0] < 24) { console.warn('\\x1b[33m⚠️  Warning: Expected Node 24+, found ' + process.version + '. Run nvm use\\x1b[0m') }\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/app.ts"
+    "dev": "tsx watch src/app.ts",
+    "lint": "eslint ."
   },
   "engines": {
     "node": ">=24.12.0"
