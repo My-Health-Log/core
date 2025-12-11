@@ -1,0 +1,24 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      nvm:
+        specifier: ^0.0.4
+        version: 0.0.4
+
+packages:
+
+  nvm@0.0.4:
+    resolution: {integrity: sha512-jvmyELykYcdyd0VCGY0E8Aqe5MngEasVvlPvrcJHbwBMUbVqa72mPdQuPzyTcykEtEx7jDrMY0QA5MoV+8EhgA==}
+    deprecated: This is NOT the correct nvm. Visit https://nvm.sh and use the curl command to install it.
+    hasBin: true
+
+snapshots:
+
+  nvm@0.0.4: {}
