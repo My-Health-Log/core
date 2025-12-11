@@ -11,21 +11,36 @@ A privacy-first health data management app. Upload health reports, extract metri
 - Help maintain this doc and other documentation as the project evolves.
 
 ## Project Structure
+
+pnpm monorepo with scoped packages:
+
 ```
-src/
-├── docker-compose.yml    # Postgres + server + client
-├── client/               # React + Vite
-└── server/               # Fastify + Drizzle + AI SDK
+src/                        # Workspace root
+├── package.json            # Workspace scripts, shared devDeps
+├── pnpm-workspace.yaml     # Defines packages
+├── .nvmrc                  # Node 24.12.0+
+├── docker-compose.yml      # Postgres + server + client
+├── server/                 # @mhl/server
+│   └── package.json
+└── client/                 # @mhl/client
+    └── package.json
 ```
 
 ## Development
-```bash
-# Start all services
-docker compose up -d
 
-# Or run individually
-cd server && pnpm dev
-cd client && pnpm dev
+**Requirements:** Node 24.12.0+ (run `nvm use` from `src/`)
+
+```bash
+# From src/ (workspace root)
+pnpm install              # Install all dependencies
+pnpm dev                  # Run server + client in parallel
+pnpm dev:server           # Server only
+pnpm dev:client           # Client only
+pnpm test                 # Run all tests
+pnpm build                # Build all packages
+
+# Or with Docker
+docker compose up -d
 ```
 
 ## Tech Stack
@@ -51,8 +66,9 @@ server/src/
 ```
 
 **Client:**
-- React + Vite
-- (TBD)
+- React 19 + Vite
+- ESLint for linting
+- TanStack Router (planned)
 
 ## Environment Variables
 
@@ -71,13 +87,13 @@ Server expects:
 **Framework:** Vitest (both server and client for unified tooling)
 
 ```bash
-# Server
-cd server && pnpm test           # Run tests
-cd server && pnpm test:cov       # With coverage
+# From src/ (workspace root)
+pnpm test                        # All tests
+pnpm --filter @mhl/server test   # Server only
+pnpm --filter @mhl/client test   # Client only
 
-# Client
-cd client && pnpm test           # Component tests (Vitest + RTL)
-cd client && pnpm test:e2e       # E2E tests (Playwright)
+# With coverage
+pnpm --filter @mhl/server test:cov
 ```
 
 **Coverage target:** 80%+ line coverage
