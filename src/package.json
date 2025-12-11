@@ -1,0 +1,22 @@
+{
+  "name": "my-health-logs",
+  "version": "1.0.0",
+  "description": "Organise and query your private health records",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm --parallel --filter './packages/*' dev",
+    "dev:server": "pnpm --filter server dev",
+    "dev:client": "pnpm --filter client dev",
+    "test": "pnpm --recursive test",
+    "build": "pnpm --recursive build"
+  },
+  "keywords": [],
+  "author": "Ayush Pahwa",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
