@@ -1,7 +1,7 @@
 {
-  "name": "my-health-logs",
+  "name": "mhl",
   "version": "1.0.0",
-  "description": "Organise and query your private health records",
+  "description": "My Health Logs: Organise and query your private health records",
   "main": "index.js",
   "scripts": {
     "dev": "pnpm --parallel --filter '*' dev",

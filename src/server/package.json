@@ -1,12 +1,13 @@
 {
-  "name": "mhl_server",
+  "name": "@mhl/server",
   "version": "1.0.0",
-  "description": "",
+  "description": "server for My Health Logs",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "preinstall": "node -e \"if(process.version.slice(1).split('.')[0] < 24) { console.warn('\\x1b[33m⚠️  Warning: Expected Node 24+, found ' + process.version + '. Run nvm use\\x1b[0m') }\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc watch src/app.ts"
+    "dev": "tsx watch src/app.ts"
   },
   "engines": {
     "node": ">=24.12.0"
