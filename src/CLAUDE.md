@@ -31,10 +31,24 @@ cd client && pnpm dev
 ## Tech Stack
 
 **Server:**
-- Fastify (Node.js)
+- Fastify (Node.js) + `fastify-type-provider-zod`
 - Drizzle ORM + Postgres
 - AI SDK v5
-- Zod for validation
+- Zod for validation + type inference
+- tsx for development
+
+**Server structure:**
+```
+server/src/
+├── app.ts              # Fastify instance + plugins
+├── routes/             # Route handlers (auth, reports, etc.)
+├── schemas/            # Zod schemas (validation + types)
+├── services/           # Business logic (AI extraction, encryption)
+├── db/
+│   ├── schema.ts       # Drizzle schema
+│   └── index.ts        # DB connection
+└── plugins/            # Custom Fastify plugins
+```
 
 **Client:**
 - React + Vite
