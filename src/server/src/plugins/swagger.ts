@@ -1,11 +1,14 @@
+import fastifyPlugin from "fastify-plugin";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { FastifyInstance } from "fastify";
 import pkg from '../../package.json' with {type: 'json'}
-import { jsonSchemaTransform } from "fastify-type-provider-zod";
+import { jsonSchemaTransform, jsonSchemaTransformObject } from "fastify-type-provider-zod";
 
-export default function swagger(app: FastifyInstance) {
-  app.register(fastifySwagger, {
+async function swagger(app: FastifyInstance) {
+  await app.register(fastifySwagger, {
+    transform: jsonSchemaTransform,
+    transformObject: jsonSchemaTransformObject,
     openapi: {
       openapi: '3.0.0',
       info: {
@@ -25,10 +28,11 @@ export default function swagger(app: FastifyInstance) {
         { name: 'parse', description: 'Data parser related end-points' }
       ],
     },
-    transform: jsonSchemaTransform,
   });
 
-  app.register(fastifySwaggerUi, {
+  await app.register(fastifySwaggerUi, {
     routePrefix: "/docs"
   });
 }
+
+export default fastifyPlugin(swagger);
