@@ -54,16 +54,51 @@ docker compose up -d
 
 **Server structure:**
 ```
-server/src/
-├── app.ts              # Fastify instance + plugins
-├── routes/             # Route handlers (auth, reports, etc.)
-├── schemas/            # Zod schemas (validation + types)
-├── services/           # Business logic (AI extraction, encryption)
-├── db/
-│   ├── schema.ts       # Drizzle schema
-│   └── index.ts        # DB connection
-└── plugins/            # Custom Fastify plugins
+server/
+├── src/
+│   ├── app.ts              # Fastify instance + plugin registration
+│   ├── server.ts           # Entry point (starts server)
+│   ├── routes/
+│   │   ├── index.ts        # Registers all routes
+│   │   ├── health.ts       # /ping, /health
+│   │   ├── auth.ts         # /auth/login, /auth/register
+│   │   └── reports.ts      # /reports/upload, /reports/:id
+│   ├── schemas/
+│   │   ├── index.ts        # Re-exports all schemas
+│   │   ├── auth.ts         # Login, register schemas
+│   │   └── reports.ts      # Upload, metrics schemas
+│   ├── services/
+│   │   ├── ai.ts           # AI SDK wrapper
+│   │   ├── ai.test.ts      # Unit test (colocated)
+│   │   ├── encryption.ts   # Encrypt/decrypt health data
+│   │   └── pdf.ts          # PDF parsing
+│   ├── db/
+│   │   ├── index.ts        # Drizzle client
+│   │   ├── schema.ts       # Drizzle table definitions
+│   │   └── migrations/     # SQL migrations
+│   ├── plugins/
+│   │   ├── swagger.ts      # Swagger config
+│   │   └── auth.ts         # Auth hooks/decorators
+│   ├── config/
+│   │   └── index.ts        # Env vars, typed config
+│   └── types/
+│       └── index.ts        # Shared types (if needed)
+└── tests/
+    ├── integration/        # Route tests with test DB
+    │   └── routes/
+    │       └── auth.test.ts
+    └── setup.ts            # Test DB setup, mocks
 ```
+
+**Fastify patterns:**
+- `app.ts` creates Fastify instance, `server.ts` starts it (separation aids testing)
+- Routes are Fastify plugins with optional prefix: `app.register(auth, { prefix: '/auth' })`
+- Middleware = hooks in `plugins/` (global) or inside routes (scoped)
+- Hooks: `onRequest`, `preHandler`, `preSerialization` replace Express middleware
+
+**Testing:**
+- Unit tests colocated (`*.test.ts` next to source) - easy to spot coverage gaps
+- Integration tests in `tests/integration/` - need test DB, different setup
 
 **Client:**
 - React 19 + Vite
