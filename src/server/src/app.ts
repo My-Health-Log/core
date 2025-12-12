@@ -1,29 +1,16 @@
-import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
+import Fastify, { FastifyInstance } from 'fastify'
 import swagger from './plugins/swagger.js'
-
-const opts: RouteShorthandOptions = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          pong: {
-            type: 'string'
-          }
-        }
-      }
-    }
-  }
-}
+import routes from './routes/index.js';
+import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod';
 
 export async function initApp() {
 
-  const app: FastifyInstance = Fastify({ logger: true })
-  await app.register(swagger);
+  const app: FastifyInstance = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
-  app.get('/ping', opts, async () => {
-    return { pong: 'it worked!' }
-  });
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
+
+  await app.register(routes);
 
   return app;
 }
