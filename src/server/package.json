@@ -1,13 +1,13 @@
 {
   "name": "@mhl/server",
-  "version": "1.0.0",
-  "description": "server for My Health Logs",
+  "version": "0.0.1",
+  "description": "API server for My Health Logs",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "preinstall": "node -e \"if(process.version.slice(1).split('.')[0] < 24) { console.warn('\\x1b[33m⚠️  Warning: Expected Node 24+, found ' + process.version + '. Run nvm use\\x1b[0m') }\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/app.ts",
+    "dev": "tsx watch --env-file=.env src/server.ts",
     "lint": "eslint ."
   },
   "engines": {
@@ -16,9 +16,12 @@
   "keywords": [],
   "author": "Ayush Pahwa",
   "license": "ISC",
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.25.0",
   "dependencies": {
+    "@fastify/swagger": "^9.6.1",
+    "@fastify/swagger-ui": "^5.2.3",
     "fastify": "^5.6.2",
+    "fastify-plugin": "^5.1.0",
     "fastify-type-provider-zod": "^6.1.0",
     "zod": "^4.1.13"
   }
