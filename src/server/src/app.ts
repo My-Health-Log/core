@@ -10,6 +10,7 @@ export async function initApp() {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
+  await app.register(swagger);
   await app.register(routes);
 
   return app;
