@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "Ayush Pahwa",
   "license": "ISC",
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.25.0",
   "dependencies": {
     "@fastify/swagger": "^9.6.1",
     "@fastify/swagger-ui": "^5.2.3",
