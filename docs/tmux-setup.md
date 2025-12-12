@@ -7,7 +7,7 @@ This setup is completely optional. Tmux just makes it easier to setup and manage
 - **tmux**
   - Install via [tmux repo](https://github.com/tmux/tmux/wiki/Installing)
   - Good setup to follow [here](https://www.youtube.com/watch?v=jaI3Hcw-ZaA)
-- **tmuxifier+** - Installed via tpm (installed in step above)
+- **tmuxifier** - Installed via tpm (installed in step above)
 
 ## Getting Started
 
