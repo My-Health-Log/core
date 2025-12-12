@@ -1,4 +1,3 @@
-import fastifyPlugin from "fastify-plugin";
 import { FastifyInstance } from "fastify";
 import { z } from 'zod'
 
@@ -10,10 +9,8 @@ const pingSchema = {
   }
 }
 
-async function healthRoutes(app: FastifyInstance) {
+export default async function healthRoutes(app: FastifyInstance) {
   app.get('/ping', { schema: pingSchema }, async () => {
     return { pong: 'it worked!' }
   });
 }
-
-export default fastifyPlugin(healthRoutes);
