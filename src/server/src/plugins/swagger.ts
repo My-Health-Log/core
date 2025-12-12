@@ -3,14 +3,13 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { FastifyInstance } from "fastify";
 import pkg from '../../package.json' with {type: 'json'}
-import { jsonSchemaTransform, jsonSchemaTransformObject } from "fastify-type-provider-zod";
+import { jsonSchemaTransform } from "fastify-type-provider-zod";
+import { config } from "../config.js";
 
 async function swagger(app: FastifyInstance) {
   await app.register(fastifySwagger, {
     transform: jsonSchemaTransform,
-    transformObject: jsonSchemaTransformObject,
     openapi: {
-      openapi: '3.0.0',
       info: {
         title: 'My Health Logs API',
         description: pkg.description,
@@ -18,7 +17,7 @@ async function swagger(app: FastifyInstance) {
       },
       servers: [
         {
-          url: 'http://localhost:3000',
+          url: `${config.server.host}:${config.server.port}`,
           description: 'Development server'
         }
       ],
