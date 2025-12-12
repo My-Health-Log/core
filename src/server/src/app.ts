@@ -1,6 +1,8 @@
 import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
+import swagger from './plugins/swagger.js'
 
 const server: FastifyInstance = Fastify({ logger: true })
+await server.register(swagger);
 
 const opts: RouteShorthandOptions = {
   schema: {
