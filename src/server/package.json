@@ -1,6 +1,6 @@
 {
   "name": "@mhl/server",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "server for My Health Logs",
   "main": "index.js",
   "type": "module",
@@ -18,6 +18,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "@fastify/swagger": "^9.6.1",
+    "@fastify/swagger-ui": "^5.2.3",
     "fastify": "^5.6.2",
     "fastify-type-provider-zod": "^6.1.0",
     "zod": "^4.1.13"
