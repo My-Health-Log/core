@@ -22,6 +22,10 @@ nvm use
 # Install all dependencies
 pnpm install
 
+# Setup environment variables
+cp server/.env.example server/.env
+# Edit server/.env with your values
+
 # Start development (server + client)
 pnpm dev
 ```
