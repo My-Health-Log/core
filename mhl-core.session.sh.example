@@ -1,0 +1,23 @@
+# Set a custom session root path. Default is `$HOME`.
+# Must be called before `initialize_session`.
+session_root "<PATH-TO-REPO>/src/"
+
+# Create session with specified name if it does not already exist. If no
+# argument is given, session name will be based on layout file name.
+if initialize_session "mhl-core"; then
+
+  new_window "editor"
+  new_window "dev"
+  new_window "gen-cmd"
+
+  select_window 3
+  run_cmd "nvm use"
+  select_window 2
+  run_cmd "nvm use && pnpm dev"
+  select_window 1
+  run_cmd "nvm use && nvim"
+
+fi
+
+# Finalize session creation and switch/attach to it.
+finalize_and_go_to_session
