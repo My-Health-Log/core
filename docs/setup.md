@@ -24,7 +24,7 @@ pnpm install
 
 # Setup environment variables
 cp server/.env.example server/.env
-# Edit server/.env with your values
+# Edit server/.env with your values (see API Keys section below)
 
 # Start development (server + client)
 pnpm dev
@@ -79,13 +79,25 @@ core/
         └── eslint.config.js
 ```
 
+## API Keys
+
+### Google Gemini (required for AI features)
+
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Click "Create API Key"
+3. Copy the key and add to `server/.env`:
+   ```
+   GOOGLE_GENERATIVE_AI_API_KEY=your-api-key-here
+   ```
+
 ## Endpoints
 
 ### Server (localhost:3000)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/ping` | Health check - returns `{"pong":"it worked!"}` |
+| GET | `/health/ping` | Health check - returns `{"pong":"it worked!"}` |
+| GET | `/health/ai` | AI SDK health check - verifies Gemini integration |
 
 ### Client (localhost:5173)
 
