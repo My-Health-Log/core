@@ -2,7 +2,7 @@ import z from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'staging', 'test']).default('development'),
-  PORT: z.string().default('3000').transform(Number).int().min(1).max(65535),
+  PORT: z.string().default('3000').transform(Number),
   HOST: z.string().default('http://localhost'),
   // TODO: update this to min length 1 when db is added
   DB_URL: z.string().default(''),
