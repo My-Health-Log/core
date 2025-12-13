@@ -46,6 +46,7 @@ docker compose up -d
 ## Tech Stack
 
 **Server:**
+
 - Fastify (Node.js) + `fastify-type-provider-zod`
 - Drizzle ORM + Postgres
 - AI SDK v5
@@ -53,6 +54,7 @@ docker compose up -d
 - tsx for development
 
 **Server structure:**
+
 ```
 server/
 ├── src/
@@ -91,16 +93,19 @@ server/
 ```
 
 **Fastify patterns:**
+
 - `app.ts` creates Fastify instance, `server.ts` starts it (separation aids testing)
 - Routes are Fastify plugins with optional prefix: `app.register(auth, { prefix: '/auth' })`
 - Middleware = hooks in `plugins/` (global) or inside routes (scoped)
 - Hooks: `onRequest`, `preHandler`, `preSerialization` replace Express middleware
 
 **Testing:**
+
 - Unit tests colocated (`*.test.ts` next to source) - easy to spot coverage gaps
 - Integration tests in `tests/integration/` - need test DB, different setup
 
 **Client:**
+
 - React 19 + Vite
 - ESLint for linting
 - TanStack Router (planned)
@@ -108,6 +113,7 @@ server/
 ## Environment Variables
 
 Server expects:
+
 - `DATABASE_URL` - Postgres connection string
 
 ## Key Concepts
@@ -134,6 +140,7 @@ pnpm --filter @mhl/server test:cov
 **Coverage target:** 80%+ line coverage
 
 **Test structure:**
+
 ```
 server/tests/
 ├── unit/           # Pure functions, utilities, Zod schemas
@@ -146,6 +153,7 @@ client/tests/
 ```
 
 **Priority areas:**
+
 - AI extraction logic (mock responses, verify parsing)
 - Encryption/decryption (correctness is critical)
 - Auth flows (password, 2FA)

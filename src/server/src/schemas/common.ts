@@ -1,4 +1,4 @@
-import z from "zod";
+import z from 'zod'
 
 export const responseSchema = (dataSchema = {}) => ({
   200: z.object({
@@ -11,4 +11,4 @@ export const responseSchema = (dataSchema = {}) => ({
     message: z.string(),
     error: z.object({ message: z.string() }).optional(),
   }),
-});
+})
