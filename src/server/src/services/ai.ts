@@ -20,7 +20,7 @@ export async function askAi(
   } catch (error) {
     return {
       success: false,
-      message: "Error occured while trying to fetch response",
+      message: "Error occurred while trying to fetch response",
       error: {
         message: error instanceof Error ? error.message : String(error),
       },
