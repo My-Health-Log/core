@@ -10,6 +10,8 @@
     "dev:client": "pnpm --filter client dev",
     "test": "pnpm --recursive test",
     "build": "pnpm --recursive build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "pnpm --recursive lint"
   },
   "keywords": [],
