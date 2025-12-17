@@ -5,9 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "postinstall": "cd pdf-parse && uv sync",
     "dev": "pnpm --parallel --filter '*' dev",
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
+    "pdf:dev": "cd pdf-parse && uv run fastapi dev app/main.py",
+    "pdf:start": "cd pdf-parse && uv run fastapi run app/main.py",
     "test": "pnpm --recursive test",
     "build": "pnpm --recursive build",
     "format": "prettier --write .",
