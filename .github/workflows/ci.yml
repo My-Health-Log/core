@@ -47,8 +47,8 @@ jobs:
 
       - name: Check formatting (Python)
         working-directory: src/pdf-parse
-        run: uv run ruff format --check .
+        run: uvx ruff format --check .
 
       - name: Lint (Python)
         working-directory: src/pdf-parse
-        run: uv run ruff check .
+        run: uvx ruff check .

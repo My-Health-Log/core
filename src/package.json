@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "postinstall": "cd pdf-parse && uv sync",
+    "postinstall": "[ \"$CI\" = 'true' ] || (cd pdf-parse && uv sync)",
     "dev": "pnpm --parallel --filter '*' dev",
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
