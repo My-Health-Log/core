@@ -29,10 +29,10 @@ pnpm pdf:dev
 
 ## Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| POST | `/extract` | Extract content from PDF |
+| Method | Path       | Description              |
+| ------ | ---------- | ------------------------ |
+| GET    | `/health`  | Health check             |
+| POST   | `/extract` | Extract content from PDF |
 
 ## Usage
 
