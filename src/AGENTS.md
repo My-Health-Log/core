@@ -20,22 +20,31 @@ src/                        # Workspace root
 ├── pnpm-workspace.yaml     # Defines packages
 ├── .nvmrc                  # Node 24.12.0+
 ├── docker-compose.yml      # Postgres + server + client
-├── server/                 # @mhl/server
+├── server/                 # @mhl/server (Node.js/Fastify)
 │   └── package.json
-└── client/                 # @mhl/client
-    └── package.json
+├── client/                 # @mhl/client (React)
+│   └── package.json
+└── pdf-parse/              # Python/FastAPI PDF extraction service
+    ├── pyproject.toml      # uv project config
+    └── app/
+        └── main.py
 ```
 
 ## Development
 
-**Requirements:** Node 24.12.0+ (run `nvm use` from `src/`)
+**Requirements:**
+
+- Node 24.12.0+ (run `nvm use` from `src/`)
+- Python 3.13+ with [uv](https://docs.astral.sh/uv/) package manager
 
 ```bash
 # From src/ (workspace root)
-pnpm install              # Install all dependencies
+pnpm install              # Install all deps (Node + Python via postinstall)
 pnpm dev                  # Run server + client in parallel
 pnpm dev:server           # Server only
 pnpm dev:client           # Client only
+pnpm pdf:dev              # PDF parsing service (dev mode)
+pnpm pdf:start            # PDF parsing service (production)
 pnpm test                 # Run all tests
 pnpm build                # Build all packages
 
@@ -98,6 +107,34 @@ server/
 - Routes are Fastify plugins with optional prefix: `app.register(auth, { prefix: '/auth' })`
 - Middleware = hooks in `plugins/` (global) or inside routes (scoped)
 - Hooks: `onRequest`, `preHandler`, `preSerialization` replace Express middleware
+
+**PDF Parse Service (Python):**
+
+Separate microservice for PDF extraction using Docling. Runs locally for privacy.
+
+```
+pdf-parse/
+├── pyproject.toml          # uv project config + deps
+├── uv.lock                 # Lockfile
+├── .python-version         # Python 3.13
+└── app/
+    ├── main.py             # FastAPI entry point
+    ├── routers/
+    │   ├── extract.py      # POST /extract
+    │   └── health.py       # GET /health
+    ├── services/
+    │   ├── provider.py     # Extraction provider interface
+    │   └── docling.py      # Docling implementation
+    └── schemas/
+        └── extract.py      # Pydantic response models
+```
+
+**Why separate service:**
+
+- Docling requires Python + ML dependencies (torch, etc.)
+- Keeps Node.js server lean
+- Provider pattern allows swapping Docling for other extractors (Upstage, LlamaParse)
+- Runs locally = health data never leaves your machine
 
 **Testing:**
 
@@ -162,4 +199,6 @@ client/tests/
 
 ## Current Focus
 
-Setting up the server with Fastify + Drizzle.
+- PDF parsing service with Docling integration (MVP complete)
+- Next: Schema mapping from Docling output to response models
+- Next: PII stripping before sending to LLM for normalization
