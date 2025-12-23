@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 
 from fastapi import UploadFile
 
-from app.schemas.extract import ExtractionResponse
+# from app.schemas.extract import ExtractionResponse
 
 
 class ExtractionProvider(ABC):
     @abstractmethod
-    async def extract(self, file: UploadFile) -> ExtractionResponse:
+    # TODO: replace return type from dict to ExtractionResponse once mapping is fixed
+    # async def extract(self, file: UploadFile) -> ExtractionResponse:
+    async def extract(self, file: UploadFile) -> dict:
         pass
 
 
