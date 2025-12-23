@@ -1,5 +1,7 @@
-from fastapi import UploadFile
 from abc import ABC, abstractmethod
+
+from fastapi import UploadFile
+
 from app.schemas.extract import ExtractionResponse
 
 

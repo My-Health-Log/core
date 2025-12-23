@@ -1,7 +1,8 @@
+import io
+
 from docling.datamodel.base_models import DocumentStream
 from docling.document_converter import DocumentConverter
 from fastapi import UploadFile
-import io
 
 # from app.schemas.extract import ExtractionResponse
 from app.services.provider import ExtractionProvider

@@ -1,5 +1,7 @@
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile
+
 from app.services.provider import get_provider
+
 # from app.schemas.extract import ExtractionResponse
 
 router = APIRouter(prefix="/extract", tags=["extraction"])

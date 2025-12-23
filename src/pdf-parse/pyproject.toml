@@ -22,3 +22,6 @@ indent-width = 4
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
