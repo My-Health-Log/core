@@ -41,11 +41,11 @@ Run from `src/` (workspace root):
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start server and client in parallel |
+| `pnpm dev` | Start server, client, and PDF service in parallel |
 | `pnpm dev:server` | Start server only |
 | `pnpm dev:client` | Start client only |
-| `pnpm pdf:dev` | Start PDF parsing service (dev mode) |
-| `pnpm pdf:start` | Start PDF parsing service (production) |
+| `pnpm dev:pdf-parse` | Start PDF parsing service (dev mode) |
+| `pnpm start:pdf-parse` | Start PDF parsing service (production) |
 | `pnpm build` | Build all packages |
 | `pnpm test` | Run all tests |
 | `pnpm lint` | Lint all packages |
@@ -158,6 +158,9 @@ uv sync
 
 # If Python version mismatch
 uv python install 3.13
+
+# Type checking (optional) - uses pyproject.toml config
+npx pyright src/pdf-parse
 ```
 
 ### PDF service won't start
