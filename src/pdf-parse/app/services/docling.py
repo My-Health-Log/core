@@ -2,7 +2,7 @@ import io
 from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 
 # from app.schemas.extract import ExtractionResponse
 from app.services.provider import ExtractionProvider
@@ -25,9 +25,10 @@ class DoclingExtractionProvider(ExtractionProvider):
     # TODO: replace return type from dict to ExtractionResponse once mapping is fixed
     async def extract(self, file: UploadFile) -> dict:
         if file.size is None or file.filename is None:
-            raise FileNotFoundError
-        if file.size > 50 * 1024 * 1024:
-            raise MemoryError
+            raise HTTPException(404, "Please use a valid file")
+        print(file.size)
+        if file.size > 5 * 1024 * 1024:
+            raise HTTPException(413, "Please use files under 5 MB")
         content = await file.read()
         stream = DocumentStream(name=file.filename or "", stream=io.BytesIO(content))
         result = self.converter.convert(stream)
