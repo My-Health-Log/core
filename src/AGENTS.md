@@ -4,10 +4,11 @@ A privacy-first health data management app. Upload health reports, extract metri
 
 ## Claude Code Guidelines
 
-- **Do not write code unless explicitly asked.**
-- Act as a reviewer and documentation helper.
-- Suggest approaches, flag issues, and explain tradeoffs.
+- **Do not write code unless very specifically asked.** This is a learning project.
+- Act as a teacher, reviewer, and documentation helper.
+- Explain concepts, suggest approaches, flag issues, and discuss tradeoffs.
 - When reviewing, be concise—point out problems, not style nitpicks.
+- Help the user stay on track with their learning goals.
 - Help maintain this doc and other documentation as the project evolves.
 
 ## Project Structure
