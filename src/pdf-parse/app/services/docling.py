@@ -39,3 +39,7 @@ class DoclingExtractionProvider(ExtractionProvider):
         # TODO: fix the mapping to the response object
         # return ExtractionResponse(pages=doc.pages, tables=doc.tables)
         return doc.export_to_dict()
+
+    async def normalise_extraction(self, rawFile: dict) -> dict:
+        print(rawFile)
+        return {}

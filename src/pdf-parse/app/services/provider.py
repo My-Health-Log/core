@@ -12,6 +12,10 @@ class ExtractionProvider(ABC):
     async def extract(self, file: UploadFile) -> dict:
         pass
 
+    @abstractmethod
+    async def normalise_extraction(self, rawFile: dict) -> dict:
+        pass
+
 
 def get_provider() -> ExtractionProvider:
     from app.services.docling import DoclingExtractionProvider
