@@ -13,7 +13,7 @@ class ExtractionProvider(ABC):
         pass
 
     @abstractmethod
-    async def normalise_extraction(self, rawFile: dict) -> dict:
+    async def normalise_extraction(self, raw_extraction_data: dict) -> dict:
         pass
 
 
