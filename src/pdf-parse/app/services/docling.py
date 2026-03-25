@@ -26,10 +26,11 @@ class DoclingExtractionProvider(ExtractionProvider):
             },
         )
 
-    def parse_groups(self, groups: list, texts: list) -> list[dict[str, dict | list]]:
-        output = []
+    def parse_groups(self, groups: list, texts: list) -> dict[str, dict | list]:
+        output = {}
         try:
             for group in groups:
+                ref = group.get("self_ref", "#")
                 # each group has a label mentioning if the group is a
                 # 1) key_value_area: an alternating pair of keys and values
                 # 2) list: Just a string of texts
@@ -37,7 +38,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                 parse_dict = {}
                 parse_list = []
                 temp_key = ""
-                meta = {}
+                page_no = -1
                 group_children = group.get("children", [])
                 is_kv_pair = label == "key_value_area" and len(group_children) % 2 == 0
                 for index, child in enumerate(group_children):
@@ -46,8 +47,9 @@ class DoclingExtractionProvider(ExtractionProvider):
                         text_index = int(child_ref.split("/")[2])
                         text_obj = texts[text_index]
                         final_text = text_obj.get("text", "")
-                        if not meta:
+                        if page_no == -1:
                             meta = text_obj.get("prov", [{}])[0]
+                            page_no = meta.get("page_no", -1)
                         if is_kv_pair:
                             if index % 2 == 0:
                                 temp_key = final_text
@@ -57,16 +59,21 @@ class DoclingExtractionProvider(ExtractionProvider):
                             parse_list.append(final_text)
 
                 group_output = {}
-                if meta:
-                    group_output["meta"] = meta
                 if parse_dict:
-                    group_output["data"] = parse_dict
+                    group_output["key_value_area"] = parse_dict
                 if parse_list:
-                    group_output["data"] = parse_list
+                    group_output["list"] = parse_list
 
-                if group_output:
-                    output.append(group_output)
+                if page_no > -1:
+                    key = str(page_no)
+                    if not output.get(key, []):
+                        output[key] = [group_output]
+                    else:
+                        output[key].append(group_output)
+                else:
+                    print("page number not found: ", ref)
         except Exception as e:
+            print("group parsing failed")
             print(e)
         finally:
             return output
@@ -87,10 +94,23 @@ class DoclingExtractionProvider(ExtractionProvider):
 
     async def normalise_extraction(self, raw_extraction_data: dict) -> dict:
         groups = []
+        pages = {}
+        output = {}
         try:
+            pages = raw_extraction_data.get("pages", {})
             groups = raw_extraction_data.get("groups", [])
             texts = raw_extraction_data.get("texts", [])
             groups = self.parse_groups(groups, texts)
+            for key, values in pages.items():
+                skip_key = True
+                str_key = str(key)
+                page_output = {}
+                page_output["meta"] = values
+                if str_key in groups:
+                    skip_key = False
+                    page_output["groups"] = groups.get(str_key, [])
+                if not skip_key:
+                    output[str_key] = page_output
         except Exception as e:
             print(e)
-        return {"groups": groups}
+        return {"output": output}
