@@ -44,7 +44,6 @@ class DoclingExtractionProvider(ExtractionProvider):
         except Exception as e:
             print("Failed to parse section headers")
             print(e)
-        print(output)
         return output
 
     def parse_groups(self, groups: list, texts: list) -> dict[str, dict | list]:
