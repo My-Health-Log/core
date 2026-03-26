@@ -107,9 +107,24 @@ class DoclingExtractionProvider(ExtractionProvider):
                 page_no = str(meta.get("page_no", -1))
                 output_for_page = output.get(page_no, [])
                 table_output = {}
-                # add parsing logic here
+                table_rows = {}
                 for cell in table.get("data", {}).get("table_cells", []):
-                    print(cell.get("text", "null"))
+                    row_number = cell.get("start_row_offset_idx", -1)
+                    table_row = table_rows.get(row_number, {})
+                    cell_bbox = cell.get("bbox", {})
+                    row_bbox = {}
+                    if not table_row:
+                        table_row["raw_row_idx"] = row_number
+                        row_bbox = cell_bbox
+                        table_row["row_section"] = cell.get("row_section", False)
+                        table_row["row_header"] = cell.get("row_header", False)
+                        table_row["data"] = []
+                    # TODO: add function to handle row bbox
+                    table_row["meta"] = row_bbox
+                    table_row["data"].append(cell.get("text", ""))
+                    table_rows[row_number] = table_row
+                table_output["ref"] = ref
+                table_output["data"] = list(table_rows.values())
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
                 print("found table with ref: ", ref, " at page: ", page_no)
