@@ -26,6 +26,26 @@ class DoclingExtractionProvider(ExtractionProvider):
             },
         )
 
+    def parse_section_headers(self, texts: list) -> dict[str, list]:
+        output = {}
+        try:
+            for text in texts:
+                label = text.get("label", "")
+                if label == "section_header":
+                    meta = text.get("prov", [{}])[0]
+                    page_no = str(meta.get("page_no", -1))
+                    output_for_page = output.get(page_no, [])
+                    if not output_for_page:
+                        output_for_page = []
+                    output_for_page.append(text.get("text", []))
+                    output[page_no] = output_for_page
+
+        except Exception as e:
+            print("Failed to parse section headers")
+            print(e)
+        print(output)
+        return output
+
     def parse_groups(self, groups: list, texts: list) -> dict[str, dict | list]:
         output = {}
         try:
@@ -101,16 +121,21 @@ class DoclingExtractionProvider(ExtractionProvider):
             groups = raw_extraction_data.get("groups", [])
             texts = raw_extraction_data.get("texts", [])
             groups = self.parse_groups(groups, texts)
+            section_headers = self.parse_section_headers(texts)
             for key, values in pages.items():
                 skip_key = True
                 str_key = str(key)
                 page_output = {}
                 page_output["meta"] = values
+                if str_key in section_headers:
+                    skip_key = False
+                    page_output["section_headers"] = section_headers.get(str_key, [])
                 if str_key in groups:
                     skip_key = False
                     page_output["groups"] = groups.get(str_key, [])
                 if not skip_key:
                     output[str_key] = page_output
         except Exception as e:
+            print("Failed to normalise output")
             print(e)
         return {"output": output}
