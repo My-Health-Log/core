@@ -98,6 +98,26 @@ class DoclingExtractionProvider(ExtractionProvider):
         finally:
             return output
 
+    def parse_tables(self, tables) -> dict[str, dict]:
+        output = {}
+        try:
+            for table in tables:
+                ref = table.get("self_ref", "")
+                meta = table.get("prov", [{}])[0]
+                page_no = str(meta.get("page_no", -1))
+                output_for_page = output.get(page_no, [])
+                table_output = {}
+                # add parsing logic here
+                for cell in table.get("data", {}).get("table_cells", []):
+                    print(cell.get("text", "null"))
+                output_for_page.append(table_output)
+                output[page_no] = output_for_page
+                print("found table with ref: ", ref, " at page: ", page_no)
+        except Exception as e:
+            print("table parsing failed")
+            print(e)
+        return output
+
     # TODO: replace return type from dict to ExtractionResponse once mapping is fixed
     async def extract(self, file: UploadFile) -> dict:
         if file.size is None or file.filename is None:
@@ -120,8 +140,10 @@ class DoclingExtractionProvider(ExtractionProvider):
             pages = raw_extraction_data.get("pages", {})
             groups = raw_extraction_data.get("groups", [])
             texts = raw_extraction_data.get("texts", [])
+            tables = raw_extraction_data.get("tables", [])
             groups = self.parse_groups(groups, texts)
             section_headers = self.parse_section_headers(texts)
+            tables = self.parse_tables(tables)
             for key, values in pages.items():
                 skip_key = True
                 str_key = str(key)
@@ -133,6 +155,9 @@ class DoclingExtractionProvider(ExtractionProvider):
                 if str_key in groups:
                     skip_key = False
                     page_output["groups"] = groups.get(str_key, [])
+                if str_key in tables:
+                    skip_key = False
+                    page_output["tables"] = tables.get(str_key, [])
                 if not skip_key:
                     output[str_key] = page_output
         except Exception as e:
