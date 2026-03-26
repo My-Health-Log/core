@@ -35,8 +35,6 @@ class DoclingExtractionProvider(ExtractionProvider):
                     meta = text.get("prov", [{}])[0]
                     page_no = str(meta.get("page_no", -1))
                     output_for_page = output.get(page_no, [])
-                    if not output_for_page:
-                        output_for_page = []
                     output_for_page.append(text.get("text", []))
                     output[page_no] = output_for_page
 
