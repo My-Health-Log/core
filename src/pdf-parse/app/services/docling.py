@@ -34,8 +34,11 @@ class DoclingExtractionProvider(ExtractionProvider):
                 if label == "section_header":
                     meta = text.get("prov", [{}])[0]
                     page_no = str(meta.get("page_no", -1))
+                    section_header_output = {}
+                    section_header_output["text"] = text.get("text", "")
+                    section_header_output["meta"] = meta.get("bbox", {})
                     output_for_page = output.get(page_no, [])
-                    output_for_page.append(text.get("text", []))
+                    output_for_page.append(section_header_output)
                     output[page_no] = output_for_page
 
         except Exception as e:
