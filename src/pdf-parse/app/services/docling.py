@@ -95,33 +95,49 @@ class DoclingExtractionProvider(ExtractionProvider):
             print(e)
 
         return output
+
     def parse_tables(self, tables) -> dict[str, dict]:
         output = {}
         try:
             for table in tables:
                 ref = table.get("self_ref", "")
                 meta = table.get("prov", [{}])[0]
+                table_data = table.get("data", {})
                 page_no = str(meta.get("page_no", -1))
                 output_for_page = output.get(page_no, [])
                 table_output = {}
-                table_rows = {}
-                for cell in table.get("data", {}).get("table_cells", []):
-                    row_number = cell.get("start_row_offset_idx", -1)
-                    table_row = table_rows.get(row_number, {})
-                    cell_bbox = cell.get("bbox", {})
+                table_rows = []
+                for index, grid in enumerate(table_data.get("grid", [])):
+                    row_number = index
+                    table_row = {}
+                    table_row["meta"] = {}
+                    table_row["meta"]["raw_row_idx"] = row_number
+                    table_row["data"] = []
                     row_bbox = {}
-                    if not table_row:
-                        table_row["raw_row_idx"] = row_number
-                        row_bbox = cell_bbox
-                        table_row["row_section"] = cell.get("row_section", False)
-                        table_row["row_header"] = cell.get("row_header", False)
-                        table_row["data"] = []
-                    # TODO: add function to handle row bbox
-                    table_row["meta"] = row_bbox
-                    table_row["data"].append(cell.get("text", ""))
-                    table_rows[row_number] = table_row
+                    for cell in grid:
+                        cell_data = cell.get("text", "")
+                        if cell_data:
+                            cell_bbox = cell.get("bbox", {})
+                            row_bbox = cell_bbox
+                            if "row_section" not in table_row["meta"]:
+                                table_row["meta"]["row_section"] = cell.get(
+                                    "row_section", False
+                                )
+                            if "row_header" not in table_row["meta"]:
+                                table_row["meta"]["row_header"] = cell.get(
+                                    "row_header", False
+                                )
+                            if "column_header" not in table_row["meta"]:
+                                table_row["meta"]["column_header"] = cell.get(
+                                    "column_header", False
+                                )
+                            table_row["data"].append(cell_data)
+                            # TODO: add function to handle row bbox
+                            # row_bbox = min(l,t) and max (r,t) from cell_bbox
+                    table_row["meta"]["bbox"] = row_bbox
+                    table_rows.append(table_row)
                 table_output["ref"] = ref
-                table_output["data"] = list(table_rows.values())
+                table_output["data"] = list(table_rows)
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
         except Exception as e:
