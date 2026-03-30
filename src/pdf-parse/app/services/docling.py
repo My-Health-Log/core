@@ -113,12 +113,17 @@ class DoclingExtractionProvider(ExtractionProvider):
                     table_row["meta"] = {}
                     table_row["meta"]["raw_row_idx"] = row_number
                     table_row["data"] = []
-                    row_bbox = {}
+                    row_bbox = {
+                        "l": float("inf"),
+                        "t": float("inf"),
+                        "r": float("-inf"),
+                        "b": float("-inf"),
+                        "coord_origin": "TOPLEFT",
+                    }
                     for cell in grid:
                         cell_data = cell.get("text", "")
                         if cell_data:
                             cell_bbox = cell.get("bbox", {})
-                            row_bbox = cell_bbox
                             if "row_section" not in table_row["meta"]:
                                 table_row["meta"]["row_section"] = cell.get(
                                     "row_section", False
@@ -132,8 +137,13 @@ class DoclingExtractionProvider(ExtractionProvider):
                                     "column_header", False
                                 )
                             table_row["data"].append(cell_data)
-                            # TODO: add function to handle row bbox
-                            # row_bbox = min(l,t) and max (r,t) from cell_bbox
+                            # To get the bounding box of the row, we need to collate the
+                            # boxes of each cell in a row. We take min of left and top
+                            # coords and max of bottom and right coords
+                            row_bbox["l"] = min(row_bbox["l"], cell_bbox.get("l", -1))
+                            row_bbox["t"] = min(row_bbox["t"], cell_bbox.get("t", -1))
+                            row_bbox["r"] = max(row_bbox["r"], cell_bbox.get("r", -1))
+                            row_bbox["b"] = max(row_bbox["b"], cell_bbox.get("b", -1))
                     table_row["meta"]["bbox"] = row_bbox
                     table_rows.append(table_row)
                 table_output["ref"] = ref
