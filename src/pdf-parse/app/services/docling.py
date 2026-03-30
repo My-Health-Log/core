@@ -7,6 +7,14 @@ from docling_core.types.io import DocumentStream
 from fastapi import HTTPException, UploadFile
 
 # from app.schemas.extract import ExtractionResponse
+from app.schemas.extract import (
+    BoundingBox,
+    CoordOriginType,
+    ParsedTable,
+    TableMeta,
+    TableRow,
+    TableRowMeta,
+)
 from app.services.provider import ExtractionProvider
 
 
@@ -95,7 +103,7 @@ class DoclingExtractionProvider(ExtractionProvider):
 
         return output
 
-    def parse_tables(self, tables) -> dict[str, dict]:
+    def parse_tables(self, tables) -> dict[str, list[ParsedTable]]:
         output = {}
         try:
             for table in tables:
@@ -103,48 +111,47 @@ class DoclingExtractionProvider(ExtractionProvider):
                 table_data = table.get("data", {})
                 page_no = str(meta.get("page_no", -1))
                 output_for_page = output.get(page_no, [])
-                table_output = {}
-                table_rows = []
+                table_meta = TableMeta(page_number=page_no)
+                table_output = ParsedTable(meta=table_meta, data=[])
                 for index, grid in enumerate(table_data.get("grid", [])):
                     row_number = index
-                    table_row = {}
-                    table_row["meta"] = {}
-                    table_row["meta"]["raw_row_idx"] = row_number
-                    table_row["data"] = []
-                    row_bbox = {
-                        "l": float("inf"),
-                        "t": float("inf"),
-                        "r": float("-inf"),
-                        "b": float("-inf"),
-                        "coord_origin": "TOPLEFT",
-                    }
+                    row_bbox = BoundingBox(
+                        left=float("inf"),
+                        top=float("inf"),
+                        right=float("-inf"),
+                        bottom=float("-inf"),
+                        coord_origin=CoordOriginType.TOPLEFT,
+                    )
+                    table_row_meta = TableRowMeta(bbox=row_bbox, raw_row_idx=row_number)
+                    table_row = TableRow(meta=table_row_meta, data=[])
                     for cell in grid:
                         cell_data = cell.get("text", "")
                         if cell_data:
                             cell_bbox = cell.get("bbox", {})
-                            if "row_section" not in table_row["meta"]:
-                                table_row["meta"]["row_section"] = cell.get(
+                            if table_row_meta.row_section is None:
+                                table_row_meta.row_section = cell.get(
                                     "row_section", False
                                 )
-                            if "row_header" not in table_row["meta"]:
-                                table_row["meta"]["row_header"] = cell.get(
+                            if table_row_meta.row_header is None:
+                                table_row_meta.row_header = cell.get(
                                     "row_header", False
                                 )
-                            if "column_header" not in table_row["meta"]:
-                                table_row["meta"]["column_header"] = cell.get(
+                            if table_row_meta.column_header is None:
+                                table_row_meta.column_header = cell.get(
                                     "column_header", False
                                 )
-                            table_row["data"].append(cell_data)
+                            table_row.data.append(cell_data)
                             # To get the bounding box of the row, we need to collate the
                             # boxes of each cell in a row. We take min of left and top
                             # coords and max of bottom and right coords
-                            row_bbox["l"] = min(row_bbox["l"], cell_bbox.get("l", -1))
-                            row_bbox["t"] = min(row_bbox["t"], cell_bbox.get("t", -1))
-                            row_bbox["r"] = max(row_bbox["r"], cell_bbox.get("r", -1))
-                            row_bbox["b"] = max(row_bbox["b"], cell_bbox.get("b", -1))
-                    table_row["meta"]["bbox"] = row_bbox
-                    table_rows.append(table_row)
-                table_output["data"] = list(table_rows)
+                            row_bbox.left = min(row_bbox.left, cell_bbox.get("l", -1))
+                            row_bbox.top = min(row_bbox.top, cell_bbox.get("t", -1))
+                            row_bbox.right = max(row_bbox.right, cell_bbox.get("r", -1))
+                            row_bbox.bottom = max(
+                                row_bbox.bottom, cell_bbox.get("b", -1)
+                            )
+                    table_row_meta.bbox = row_bbox
+                    table_output.data.append(table_row)
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
         except Exception as e:
