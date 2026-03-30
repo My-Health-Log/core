@@ -1,11 +1,45 @@
+from enum import StrEnum
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
+class CoordOriginType(StrEnum):
+    TOPLEFT = "TOPLEFT"
+    BOTTOMLEFT = "BOTTOMLEFT"
+
+
 class BoundingBox(BaseModel):
-    x: float
-    y: float
-    width: float
-    height: float
+    left: float
+    top: float
+    right: float
+    bottom: float
+    coord_origin: CoordOriginType
+
+
+class BaseMeta(BaseModel):
+    bbox: BoundingBox
+
+
+class TableRowMeta(BaseMeta):
+    raw_row_idx: int
+    row_section: Optional[bool] = None
+    row_header: Optional[bool] = None
+    column_header: Optional[bool] = None
+
+
+class TableRow(BaseModel):
+    meta: TableRowMeta
+    data: List[str]
+
+
+class TableMeta(BaseModel):
+    page_number: str
+
+
+class ParsedTable(BaseModel):
+    meta: TableMeta
+    data: List[TableRow]
 
 
 class Element(BaseModel):
@@ -20,12 +54,5 @@ class Page(BaseModel):
     elements: list[Element]
 
 
-class Table(BaseModel):
-    page_number: int
-    rows: list[list[str]]
-    bbox: BoundingBox
-
-
 class ExtractionResponse(BaseModel):
     pages: list[Page]
-    tables: list[Table]
