@@ -50,7 +50,6 @@ class DoclingExtractionProvider(ExtractionProvider):
         output = {}
         try:
             for group in groups:
-                ref = group.get("self_ref", "#")
                 # each group has a label mentioning if the group is a
                 # 1) key_value_area: an alternating pair of keys and values
                 # 2) list: Just a string of texts
@@ -100,7 +99,6 @@ class DoclingExtractionProvider(ExtractionProvider):
         output = {}
         try:
             for table in tables:
-                ref = table.get("self_ref", "")
                 meta = table.get("prov", [{}])[0]
                 table_data = table.get("data", {})
                 page_no = str(meta.get("page_no", -1))
@@ -146,7 +144,6 @@ class DoclingExtractionProvider(ExtractionProvider):
                             row_bbox["b"] = max(row_bbox["b"], cell_bbox.get("b", -1))
                     table_row["meta"]["bbox"] = row_bbox
                     table_rows.append(table_row)
-                table_output["ref"] = ref
                 table_output["data"] = list(table_rows)
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
