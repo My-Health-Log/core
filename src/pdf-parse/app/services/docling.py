@@ -90,14 +90,11 @@ class DoclingExtractionProvider(ExtractionProvider):
                         output[key] = [group_output]
                     else:
                         output[key].append(group_output)
-                else:
-                    print("page number not found: ", ref)
         except Exception as e:
             print("group parsing failed")
             print(e)
-        finally:
-            return output
 
+        return output
     def parse_tables(self, tables) -> dict[str, dict]:
         output = {}
         try:
@@ -127,7 +124,6 @@ class DoclingExtractionProvider(ExtractionProvider):
                 table_output["data"] = list(table_rows.values())
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
-                print("found table with ref: ", ref, " at page: ", page_no)
         except Exception as e:
             print("table parsing failed")
             print(e)
