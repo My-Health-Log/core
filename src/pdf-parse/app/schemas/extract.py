@@ -19,6 +19,7 @@ class BoundingBox(BaseModel):
 
 class BaseMeta(BaseModel):
     bbox: BoundingBox
+    page_number: Optional[str] = None
 
 
 class TableRowMeta(BaseMeta):
