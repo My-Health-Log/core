@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class CoordOriginType(StrEnum):
+class CoordOriginEnum(StrEnum):
     TOPLEFT = "TOPLEFT"
     BOTTOMLEFT = "BOTTOMLEFT"
 
@@ -14,7 +14,7 @@ class BoundingBox(BaseModel):
     top: float
     right: float
     bottom: float
-    coord_origin: CoordOriginType
+    coord_origin: CoordOriginEnum
 
 
 class BaseMeta(BaseModel):

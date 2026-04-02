@@ -10,7 +10,7 @@ from fastapi import HTTPException, UploadFile
 from app.schemas.extract import (
     BaseMeta,
     BoundingBox,
-    CoordOriginType,
+    CoordOriginEnum,
     ParsedTable,
     TableRow,
     TableRowMeta,
@@ -120,7 +120,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                         top=float("inf"),
                         right=float("-inf"),
                         bottom=float("-inf"),
-                        coord_origin=CoordOriginType.TOPLEFT,
+                        coord_origin=CoordOriginEnum.TOPLEFT,
                     )
                     table_row_meta = TableRowMeta(bbox=row_bbox, raw_row_idx=row_number)
                     table_row = TableRow(meta=table_row_meta, data=[])
