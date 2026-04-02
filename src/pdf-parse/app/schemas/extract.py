@@ -70,11 +70,20 @@ class Element(BaseModel):
     type: str  # "text", "table", "heading"
 
 
+class PageSize(BaseModel):
+    width: float
+    height: float
+
+
+class PageMeta(BaseMeta):
+    size: PageSize
+
+
 class Page(BaseModel):
-    page_number: int
-    text: str
-    elements: list[Element]
+    meta: PageMeta
+    section_headers: Optional[list[ParseSectionHeader]] = None
+    groups: Optional[ParsedGroups] = None
+    tables: Optional[list[ParsedTable]] = None
 
 
-class ExtractionResponse(BaseModel):
-    pages: list[Page]
+ExtractionResponse = dict[str, Page]
