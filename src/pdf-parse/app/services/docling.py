@@ -53,9 +53,9 @@ class DoclingExtractionProvider(ExtractionProvider):
                     page_no = str(meta.get("page_no", -1))
                     section_header_bbox = BoundingBox(
                         left=bbox.get("l", -1),
-                        top=bbox.get("l", -1),
-                        bottom=bbox.get("l", -1),
-                        right=bbox.get("l", -1),
+                        top=bbox.get("t", -1),
+                        bottom=bbox.get("b", -1),
+                        right=bbox.get("r", -1),
                         coord_origin=bbox.get(
                             "coord_origin", CoordOriginEnum.BOTTOMLEFT
                         ),
