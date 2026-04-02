@@ -39,6 +39,11 @@ class ParsedTable(BaseModel):
     data: List[TableRow]
 
 
+class ParseSectionHeader(BaseModel):
+    meta: BaseMeta
+    data: str
+
+
 class Element(BaseModel):
     text: str
     bbox: BoundingBox
