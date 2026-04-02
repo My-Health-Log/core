@@ -11,9 +11,12 @@ from app.schemas.extract import (
     BaseMeta,
     BoundingBox,
     CoordOriginEnum,
+    ExtractionResponse,
     GroupTypeEnum,
     KVGroup,
     ListGroup,
+    Page,
+    PageMeta,
     ParsedGroups,
     ParsedTable,
     ParseSectionHeader,
@@ -193,10 +196,10 @@ class DoclingExtractionProvider(ExtractionProvider):
         # return ExtractionResponse(pages=doc.pages, tables=doc.tables)
         return doc.export_to_dict()
 
-    async def normalise_extraction(self, raw_extraction_data: dict) -> dict:
-        groups = []
-        pages = {}
-        output = {}
+    async def normalise_extraction(
+        self, raw_extraction_data: dict
+    ) -> ExtractionResponse:
+        output = ExtractionResponse()
         try:
             pages = raw_extraction_data.get("pages", {})
             groups = raw_extraction_data.get("groups", [])
@@ -207,21 +210,25 @@ class DoclingExtractionProvider(ExtractionProvider):
             tables = self.parse_tables(tables)
             for key, values in pages.items():
                 skip_key = True
-                str_key = str(key)
-                page_output = {}
-                page_output["meta"] = values
-                if str_key in section_headers:
+                str_page_no = str(key)
+                page_output = Page(
+                    meta=PageMeta(
+                        size=values.get("size", {}),
+                        page_number=key,
+                    )
+                )
+                if str_page_no in section_headers:
                     skip_key = False
-                    page_output["section_headers"] = section_headers.get(str_key, [])
-                if str_key in groups:
+                    page_output.section_headers = section_headers.get(str_page_no, [])
+                if str_page_no in groups:
                     skip_key = False
-                    page_output["groups"] = groups.get(str_key, [])
-                if str_key in tables:
+                    page_output.groups = groups.get(str_page_no, None)
+                if str_page_no in tables:
                     skip_key = False
-                    page_output["tables"] = tables.get(str_key, [])
+                    page_output.tables = tables.get(str_page_no, [])
                 if not skip_key:
-                    output[str_key] = page_output
+                    output[str_page_no] = page_output
         except Exception as e:
             print("Failed to normalise output")
             print(e)
-        return {"output": output}
+        return output
