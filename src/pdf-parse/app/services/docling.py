@@ -11,6 +11,10 @@ from app.schemas.extract import (
     BaseMeta,
     BoundingBox,
     CoordOriginEnum,
+    GroupTypeEnum,
+    KVGroup,
+    ListGroup,
+    ParsedGroups,
     ParsedTable,
     ParseSectionHeader,
     TableRow,
@@ -66,20 +70,22 @@ class DoclingExtractionProvider(ExtractionProvider):
             print(e)
         return output
 
-    def parse_groups(self, groups: list, texts: list) -> dict[str, dict | list]:
-        output = {}
+    def parse_groups(self, groups: list, texts: list) -> dict[str, ParsedGroups]:
+        output: dict[str, ParsedGroups] = {}
         try:
             for group in groups:
                 # each group has a label mentioning if the group is a
                 # 1) key_value_area: an alternating pair of keys and values
                 # 2) list: Just a string of texts
                 label = group.get("label", "list")
-                parse_dict = {}
-                parse_list = []
+                parsed_kv_group = {}
+                parsed_list_group = []
                 temp_key = ""
                 page_no = -1
                 group_children = group.get("children", [])
-                is_kv_pair = label == "key_value_area" and len(group_children) % 2 == 0
+                is_kv_pair = (
+                    label == GroupTypeEnum.KVArea and len(group_children) % 2 == 0
+                )
                 for index, child in enumerate(group_children):
                     child_ref = str(child.get("$ref", ""))
                     if "texts" in child_ref:
@@ -93,22 +99,24 @@ class DoclingExtractionProvider(ExtractionProvider):
                             if index % 2 == 0:
                                 temp_key = final_text
                             else:
-                                parse_dict[temp_key] = final_text
+                                parsed_kv_group[temp_key] = final_text
                         else:
-                            parse_list.append(final_text)
+                            parsed_list_group.append(final_text)
 
-                group_output = {}
-                if parse_dict:
-                    group_output["key_value_area"] = parse_dict
-                if parse_list:
-                    group_output["list"] = parse_list
+                group_output = None
+                if parsed_kv_group:
+                    group_output = KVGroup(data=parsed_kv_group)
+                if parsed_list_group:
+                    group_output = ListGroup(data=parsed_list_group)
 
-                if page_no > -1:
+                if page_no > -1 and group_output:
                     key = str(page_no)
                     if not output.get(key, []):
-                        output[key] = [group_output]
+                        output[key] = ParsedGroups(
+                            meta=BaseMeta(page_number=key), data=[group_output]
+                        )
                     else:
-                        output[key].append(group_output)
+                        output[key].data.append(group_output)
         except Exception as e:
             print("group parsing failed")
             print(e)
