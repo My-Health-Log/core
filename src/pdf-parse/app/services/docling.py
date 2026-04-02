@@ -12,6 +12,7 @@ from app.schemas.extract import (
     BoundingBox,
     CoordOriginEnum,
     ParsedTable,
+    ParseSectionHeader,
     TableRow,
     TableRowMeta,
 )
@@ -34,17 +35,28 @@ class DoclingExtractionProvider(ExtractionProvider):
             },
         )
 
-    def parse_section_headers(self, texts: list) -> dict[str, list]:
+    def parse_section_headers(self, texts: list) -> dict[str, list[ParseSectionHeader]]:
         output = {}
         try:
             for text in texts:
                 label = text.get("label", "")
                 if label == "section_header":
                     meta = text.get("prov", [{}])[0]
+                    bbox = meta.get("bbox", {})
                     page_no = str(meta.get("page_no", -1))
-                    section_header_output = {}
-                    section_header_output["text"] = text.get("text", "")
-                    section_header_output["meta"] = meta.get("bbox", {})
+                    section_header_bbox = BoundingBox(
+                        left=bbox.get("l", -1),
+                        top=bbox.get("l", -1),
+                        bottom=bbox.get("l", -1),
+                        right=bbox.get("l", -1),
+                        coord_origin=bbox.get(
+                            "coord_origin", CoordOriginEnum.BOTTOMLEFT
+                        ),
+                    )
+                    section_header_output = ParseSectionHeader(
+                        data=text.get("text", ""),
+                        meta=BaseMeta(bbox=section_header_bbox, page_number=page_no),
+                    )
                     output_for_page = output.get(page_no, [])
                     output_for_page.append(section_header_output)
                     output[page_no] = output_for_page
