@@ -44,6 +44,26 @@ class ParseSectionHeader(BaseModel):
     data: str
 
 
+class GroupTypeEnum(StrEnum):
+    KVArea = "key_value_area"
+    List = "list"
+
+
+class KVGroup(BaseModel):
+    type: GroupTypeEnum = GroupTypeEnum.KVArea
+    data: dict[str, str]
+
+
+class ListGroup(BaseModel):
+    type: GroupTypeEnum = GroupTypeEnum.List
+    data: list[str]
+
+
+class ParsedGroups(BaseModel):
+    meta: BaseMeta
+    data: list[KVGroup | ListGroup]
+
+
 class Element(BaseModel):
     text: str
     bbox: BoundingBox
