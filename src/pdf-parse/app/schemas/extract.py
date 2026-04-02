@@ -18,7 +18,7 @@ class BoundingBox(BaseModel):
 
 
 class BaseMeta(BaseModel):
-    bbox: BoundingBox
+    bbox: Optional[BoundingBox] = None
     page_number: Optional[str] = None
 
 
@@ -34,12 +34,8 @@ class TableRow(BaseModel):
     data: List[str]
 
 
-class TableMeta(BaseModel):
-    page_number: str
-
-
 class ParsedTable(BaseModel):
-    meta: TableMeta
+    meta: BaseMeta
     data: List[TableRow]
 
 

@@ -8,10 +8,10 @@ from fastapi import HTTPException, UploadFile
 
 # from app.schemas.extract import ExtractionResponse
 from app.schemas.extract import (
+    BaseMeta,
     BoundingBox,
     CoordOriginType,
     ParsedTable,
-    TableMeta,
     TableRow,
     TableRowMeta,
 )
@@ -111,7 +111,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                 table_data = table.get("data", {})
                 page_no = str(meta.get("page_no", -1))
                 output_for_page = output.get(page_no, [])
-                table_meta = TableMeta(page_number=page_no)
+                table_meta = BaseMeta(page_number=page_no)
                 table_output = ParsedTable(meta=table_meta, data=[])
                 for index, grid in enumerate(table_data.get("grid", [])):
                     row_number = index
