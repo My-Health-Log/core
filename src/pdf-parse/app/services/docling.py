@@ -99,7 +99,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                     label == GroupTypeEnum.KVArea and len(group_children) % 2 == 0
                 )
                 for index, child in enumerate(group_children):
-                    child_ref = str(child.get_ref())
+                    child_ref = str(child.cref)
                     if "texts" in child_ref:
                         text_index = int(child_ref.split("/")[2])
                         text_obj = texts[text_index]
