@@ -13,11 +13,11 @@ from app.schemas.extract import (
     CoordOriginEnum,
     ExtractionResponse,
     GroupTypeEnum,
-    KVGroup,
-    ListGroup,
     Page,
     PageMeta,
     ParsedGroups,
+    ParsedKVGroup,
+    ParsedListGroup,
     ParsedTable,
     ParseSectionHeader,
     TableRow,
@@ -108,9 +108,9 @@ class DoclingExtractionProvider(ExtractionProvider):
 
                 group_output = None
                 if parsed_kv_group:
-                    group_output = KVGroup(data=parsed_kv_group)
+                    group_output = ParsedKVGroup(data=parsed_kv_group)
                 if parsed_list_group:
-                    group_output = ListGroup(data=parsed_list_group)
+                    group_output = ParsedListGroup(data=parsed_list_group)
 
                 if page_no > -1 and group_output:
                     key = str(page_no)

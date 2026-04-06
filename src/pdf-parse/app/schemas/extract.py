@@ -49,19 +49,19 @@ class GroupTypeEnum(StrEnum):
     List = "list"
 
 
-class KVGroup(BaseModel):
+class ParsedKVGroup(BaseModel):
     type: GroupTypeEnum = GroupTypeEnum.KVArea
     data: dict[str, str]
 
 
-class ListGroup(BaseModel):
+class ParsedListGroup(BaseModel):
     type: GroupTypeEnum = GroupTypeEnum.List
     data: list[str]
 
 
 class ParsedGroups(BaseModel):
     meta: BaseMeta
-    data: list[KVGroup | ListGroup]
+    data: list[ParsedKVGroup | ParsedListGroup]
 
 
 class Element(BaseModel):
