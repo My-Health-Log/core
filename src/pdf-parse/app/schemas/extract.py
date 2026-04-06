@@ -64,12 +64,6 @@ class ParsedGroups(BaseModel):
     data: list[ParsedKVGroup | ParsedListGroup]
 
 
-class Element(BaseModel):
-    text: str
-    bbox: BoundingBox
-    type: str  # "text", "table", "heading"
-
-
 class PageSize(BaseModel):
     width: float
     height: float
