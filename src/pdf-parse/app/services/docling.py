@@ -3,6 +3,14 @@ from io import BytesIO
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling_core.types.doc.document import (
+    DoclingDocument,
+    GroupItem,
+    InlineGroup,
+    ListGroup,
+    TableItem,
+)
+from docling_core.types.doc.labels import DocItemLabel
 from docling_core.types.io import DocumentStream
 from fastapi import HTTPException, UploadFile
 
@@ -15,6 +23,7 @@ from app.schemas.extract import (
     GroupTypeEnum,
     Page,
     PageMeta,
+    PageSize,
     ParsedGroups,
     ParsedKVGroup,
     ParsedListGroup,
@@ -47,7 +56,7 @@ class DoclingExtractionProvider(ExtractionProvider):
         try:
             for text in texts:
                 label = text.get("label", "")
-                if label == "section_header":
+                if label == DocItemLabel.SECTION_HEADER:
                     meta = text.get("prov", [{}])[0]
                     bbox = meta.get("bbox", {})
                     page_no = str(meta.get("page_no", -1))
@@ -73,24 +82,26 @@ class DoclingExtractionProvider(ExtractionProvider):
             print(e)
         return output
 
-    def parse_groups(self, groups: list, texts: list) -> dict[str, ParsedGroups]:
+    def parse_groups(
+        self, groups: list[ListGroup | InlineGroup | GroupItem], texts: list
+    ) -> dict[str, ParsedGroups]:
         output: dict[str, ParsedGroups] = {}
         try:
             for group in groups:
                 # each group has a label mentioning if the group is a
                 # 1) key_value_area: an alternating pair of keys and values
                 # 2) list: Just a string of texts
-                label = group.get("label", "list")
+                label = group.label
                 parsed_kv_group = {}
                 parsed_list_group = []
                 temp_key = ""
                 page_no = -1
-                group_children = group.get("children", [])
+                group_children = group.children
                 is_kv_pair = (
                     label == GroupTypeEnum.KVArea and len(group_children) % 2 == 0
                 )
                 for index, child in enumerate(group_children):
-                    child_ref = str(child.get("$ref", ""))
+                    child_ref = str(child.get_ref())
                     if "texts" in child_ref:
                         text_index = int(child_ref.split("/")[2])
                         text_obj = texts[text_index]
@@ -126,17 +137,17 @@ class DoclingExtractionProvider(ExtractionProvider):
 
         return output
 
-    def parse_tables(self, tables) -> dict[str, list[ParsedTable]]:
+    def parse_tables(self, tables: list[TableItem]) -> dict[str, list[ParsedTable]]:
         output = {}
         try:
             for table in tables:
-                meta = table.get("prov", [{}])[0]
-                table_data = table.get("data", {})
-                page_no = str(meta.get("page_no", -1))
+                meta = table.prov[0]
+                table_data = table.data
+                page_no = str(meta.page_no)
                 output_for_page = output.get(page_no, [])
                 table_meta = BaseMeta(page_number=page_no)
                 table_output = ParsedTable(meta=table_meta, data=[])
-                for index, grid in enumerate(table_data.get("grid", [])):
+                for index, grid in enumerate(table_data.grid):
                     row_number = index
                     row_bbox = BoundingBox(
                         left=float("inf"),
@@ -148,31 +159,23 @@ class DoclingExtractionProvider(ExtractionProvider):
                     table_row_meta = TableRowMeta(bbox=row_bbox, raw_row_idx=row_number)
                     table_row = TableRow(meta=table_row_meta, data=[])
                     for cell in grid:
-                        cell_data = cell.get("text", "")
-                        if cell_data:
-                            cell_bbox = cell.get("bbox", {})
+                        cell_data = cell.text
+                        cell_bbox = cell.bbox
+                        if cell_data and cell_bbox:
                             if table_row_meta.row_section is None:
-                                table_row_meta.row_section = cell.get(
-                                    "row_section", False
-                                )
+                                table_row_meta.row_section = cell.row_section
                             if table_row_meta.row_header is None:
-                                table_row_meta.row_header = cell.get(
-                                    "row_header", False
-                                )
+                                table_row_meta.row_header = cell.row_header
                             if table_row_meta.column_header is None:
-                                table_row_meta.column_header = cell.get(
-                                    "column_header", False
-                                )
+                                table_row_meta.column_header = cell.column_header
                             table_row.data.append(cell_data)
                             # To get the bounding box of the row, we need to collate the
                             # boxes of each cell in a row. We take min of left and top
                             # coords and max of bottom and right coords
-                            row_bbox.left = min(row_bbox.left, cell_bbox.get("l", -1))
-                            row_bbox.top = min(row_bbox.top, cell_bbox.get("t", -1))
-                            row_bbox.right = max(row_bbox.right, cell_bbox.get("r", -1))
-                            row_bbox.bottom = max(
-                                row_bbox.bottom, cell_bbox.get("b", -1)
-                            )
+                            row_bbox.left = min(row_bbox.left, cell_bbox.l)
+                            row_bbox.top = min(row_bbox.top, cell_bbox.t)
+                            row_bbox.right = max(row_bbox.right, cell_bbox.r)
+                            row_bbox.bottom = max(row_bbox.bottom, cell_bbox.b)
                     table_row_meta.bbox = row_bbox
                     table_output.data.append(table_row)
                 output_for_page.append(table_output)
@@ -182,8 +185,7 @@ class DoclingExtractionProvider(ExtractionProvider):
             print(e)
         return output
 
-    # TODO: replace return type from dict to ExtractionResponse once mapping is fixed
-    async def extract(self, file: UploadFile) -> dict:
+    async def extract(self, file: UploadFile) -> ExtractionResponse:
         if file.size is None or file.filename is None:
             raise HTTPException(404, "Please use a valid file")
         if file.size > 5 * 1024 * 1024:
@@ -194,27 +196,36 @@ class DoclingExtractionProvider(ExtractionProvider):
         doc = result.document
         # TODO: fix the mapping to the response object
         # return ExtractionResponse(pages=doc.pages, tables=doc.tables)
-        return doc.export_to_dict()
+        return await self.normalise_extraction(doc)
 
     async def normalise_extraction(
-        self, raw_extraction_data: dict
+        self, raw_extraction_data: DoclingDocument
     ) -> ExtractionResponse:
         output = ExtractionResponse()
         try:
-            pages = raw_extraction_data.get("pages", {})
-            groups = raw_extraction_data.get("groups", [])
-            texts = raw_extraction_data.get("texts", [])
-            tables = raw_extraction_data.get("tables", [])
+            # extract objects from the docling document
+            pages = raw_extraction_data.pages
+            groups = raw_extraction_data.groups
+            texts = raw_extraction_data.texts
+            tables = raw_extraction_data.tables
+
+            # parse raw objects to ExtractionResponse format
             groups = self.parse_groups(groups, texts)
             section_headers = self.parse_section_headers(texts)
             tables = self.parse_tables(tables)
+
+            # loop through the pages to create output object
             for key, values in pages.items():
                 skip_key = True
                 str_page_no = str(key)
+                page_size = PageSize(
+                    width=values.size.width,
+                    height=values.size.height,
+                )
                 page_output = Page(
                     meta=PageMeta(
-                        size=values.get("size", {}),
-                        page_number=key,
+                        size=page_size,
+                        page_number=str_page_no,
                     )
                 )
                 if str_page_no in section_headers:
