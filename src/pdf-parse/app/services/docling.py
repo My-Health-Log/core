@@ -5,9 +5,6 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling_core.types.doc.document import (
     DoclingDocument,
-    GroupItem,
-    InlineGroup,
-    ListGroup,
     TableItem,
 )
 from docling_core.types.doc.labels import DocItemLabel
@@ -15,6 +12,7 @@ from docling_core.types.io import DocumentStream
 from fastapi import HTTPException, UploadFile
 
 # from app.schemas.extract import ExtractionResponse
+from app.schemas.docling import DoclingGroups, DoclingTexts
 from app.schemas.extract import (
     BaseMeta,
     BoundingBox,
@@ -51,26 +49,26 @@ class DoclingExtractionProvider(ExtractionProvider):
             },
         )
 
-    def parse_section_headers(self, texts: list) -> dict[str, list[ParseSectionHeader]]:
+    def parse_section_headers(
+        self, texts: DoclingTexts
+    ) -> dict[str, list[ParseSectionHeader]]:
         output = {}
         try:
             for text in texts:
-                label = text.get("label", "")
+                label = text.label
                 if label == DocItemLabel.SECTION_HEADER:
-                    meta = text.get("prov", [{}])[0]
-                    bbox = meta.get("bbox", {})
-                    page_no = str(meta.get("page_no", -1))
+                    meta = text.prov[0]
+                    bbox = meta.bbox
+                    page_no = str(meta.page_no)
                     section_header_bbox = BoundingBox(
-                        left=bbox.get("l", -1),
-                        top=bbox.get("t", -1),
-                        bottom=bbox.get("b", -1),
-                        right=bbox.get("r", -1),
-                        coord_origin=bbox.get(
-                            "coord_origin", CoordOriginEnum.BOTTOMLEFT
-                        ),
+                        left=bbox.l,
+                        top=bbox.t,
+                        bottom=bbox.b,
+                        right=bbox.r,
+                        coord_origin=CoordOriginEnum(value=bbox.coord_origin.value),
                     )
                     section_header_output = ParseSectionHeader(
-                        data=text.get("text", ""),
+                        data=text.text,
                         meta=BaseMeta(bbox=section_header_bbox, page_number=page_no),
                     )
                     output_for_page = output.get(page_no, [])
@@ -83,7 +81,7 @@ class DoclingExtractionProvider(ExtractionProvider):
         return output
 
     def parse_groups(
-        self, groups: list[ListGroup | InlineGroup | GroupItem], texts: list
+        self, groups: DoclingGroups, texts: DoclingTexts
     ) -> dict[str, ParsedGroups]:
         output: dict[str, ParsedGroups] = {}
         try:
@@ -105,10 +103,10 @@ class DoclingExtractionProvider(ExtractionProvider):
                     if "texts" in child_ref:
                         text_index = int(child_ref.split("/")[2])
                         text_obj = texts[text_index]
-                        final_text = text_obj.get("text", "")
+                        final_text = text_obj.text
                         if page_no == -1:
-                            meta = text_obj.get("prov", [{}])[0]
-                            page_no = meta.get("page_no", -1)
+                            meta = text_obj.prov[0]
+                            page_no = meta.page_no
                         if is_kv_pair:
                             if index % 2 == 0:
                                 temp_key = final_text
