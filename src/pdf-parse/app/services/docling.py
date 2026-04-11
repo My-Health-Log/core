@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 
 from docling.datamodel.base_models import InputFormat
@@ -31,6 +32,8 @@ from app.schemas.extract import (
     TableRowMeta,
 )
 from app.services.provider import ExtractionProvider
+
+logger = logging.getLogger("uvicorn")
 
 
 class DoclingExtractionProvider(ExtractionProvider):
@@ -76,8 +79,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                     output[page_no] = output_for_page
 
         except Exception as e:
-            print("Failed to parse section headers")
-            print(e)
+            logger.error("Failed to parse section headers: %s", e)
         return output
 
     def parse_groups(
@@ -130,8 +132,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                     else:
                         output[key].data.append(group_output)
         except Exception as e:
-            print("group parsing failed")
-            print(e)
+            logger.error("Failed to parse groups: %s", e)
 
         return output
 
@@ -179,8 +180,7 @@ class DoclingExtractionProvider(ExtractionProvider):
                 output_for_page.append(table_output)
                 output[page_no] = output_for_page
         except Exception as e:
-            print("table parsing failed")
-            print(e)
+            logger.error("Failed to parse tables: %s", e)
         return output
 
     async def extract(self, file: UploadFile) -> ExtractionResponse:
@@ -236,6 +236,5 @@ class DoclingExtractionProvider(ExtractionProvider):
                 if not skip_key:
                     output[str_page_no] = page_output
         except Exception as e:
-            print("Failed to normalise output")
-            print(e)
+            logger.error("Failed to normalise output: %s", e)
         return output
