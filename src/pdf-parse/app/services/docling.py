@@ -192,8 +192,6 @@ class DoclingExtractionProvider(ExtractionProvider):
         stream = DocumentStream(name=file.filename or "", stream=BytesIO(content))
         result = self.converter.convert(stream)
         doc = result.document
-        # TODO: fix the mapping to the response object
-        # return ExtractionResponse(pages=doc.pages, tables=doc.tables)
         return await self.normalise_extraction(doc)
 
     async def normalise_extraction(
