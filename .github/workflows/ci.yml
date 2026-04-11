@@ -57,6 +57,10 @@ jobs:
         working-directory: src/pdf-parse
         run: uv run pyright
 
-      - name: Type check (Node.js)
-        working-directory: src
-        run: pnpm tsc --noEmit
+      - name: Type check (Node.js - server)
+        working-directory: src/server
+        run: npx tsc --noEmit
+
+      - name: Type check (Node.js - client)
+        working-directory: src/client
+        run: npx tsc --noEmit
