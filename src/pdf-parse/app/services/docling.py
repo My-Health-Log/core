@@ -57,131 +57,119 @@ class DoclingExtractionProvider(ExtractionProvider):
         self, texts: DoclingTexts
     ) -> dict[str, list[ParseSectionHeader]]:
         output = {}
-        try:
-            for text in texts:
-                label = text.label
-                if label == DocItemLabel.SECTION_HEADER:
-                    meta = text.prov[0]
-                    bbox = meta.bbox
-                    page_no = str(meta.page_no)
-                    section_header_bbox = BoundingBox(
-                        left=bbox.l,
-                        top=bbox.t,
-                        bottom=bbox.b,
-                        right=bbox.r,
-                        coord_origin=CoordOriginEnum(value=bbox.coord_origin.value),
-                    )
-                    section_header_output = ParseSectionHeader(
-                        data=text.text,
-                        meta=BaseMeta(bbox=section_header_bbox, page_number=page_no),
-                    )
-                    output_for_page = output.get(page_no, [])
-                    output_for_page.append(section_header_output)
-                    output[page_no] = output_for_page
-
-        except Exception as e:
-            logger.error("Failed to parse section headers: %s", e)
+        for text in texts:
+            label = text.label
+            if label == DocItemLabel.SECTION_HEADER:
+                meta = text.prov[0]
+                bbox = meta.bbox
+                page_no = str(meta.page_no)
+                section_header_bbox = BoundingBox(
+                    left=bbox.l,
+                    top=bbox.t,
+                    bottom=bbox.b,
+                    right=bbox.r,
+                    coord_origin=CoordOriginEnum(value=bbox.coord_origin.value),
+                )
+                section_header_output = ParseSectionHeader(
+                    data=text.text,
+                    meta=BaseMeta(bbox=section_header_bbox, page_number=page_no),
+                )
+                output_for_page = output.get(page_no, [])
+                output_for_page.append(section_header_output)
+                output[page_no] = output_for_page
         return output
 
     def parse_groups(
         self, groups: DoclingGroups, texts: DoclingTexts
     ) -> dict[str, ParsedGroups]:
         output: dict[str, ParsedGroups] = {}
-        try:
-            for group in groups:
-                # each group has a label mentioning if the group is a
-                # 1) key_value_area: an alternating pair of keys and values
-                # 2) list: Just a string of texts
-                label = group.label
-                parsed_kv_group = {}
-                parsed_list_group = []
-                temp_key = ""
-                page_no = -1
-                group_children = group.children
-                is_kv_pair = (
-                    label == GroupTypeEnum.KVArea and len(group_children) % 2 == 0
-                )
-                for index, child in enumerate(group_children):
-                    child_ref = str(child.cref)
-                    if "texts" in child_ref:
-                        text_index = int(child_ref.split("/")[2])
-                        text_obj = texts[text_index]
-                        final_text = text_obj.text
-                        if page_no == -1:
-                            meta = text_obj.prov[0]
-                            page_no = meta.page_no
-                        if is_kv_pair:
-                            if index % 2 == 0:
-                                temp_key = final_text
-                            else:
-                                parsed_kv_group[temp_key] = final_text
+        for group in groups:
+            # each group has a label mentioning if the group is a
+            # 1) key_value_area: an alternating pair of keys and values
+            # 2) list: Just a string of texts
+            label = group.label
+            parsed_kv_group = {}
+            parsed_list_group = []
+            temp_key = ""
+            page_no = -1
+            group_children = group.children
+            is_kv_pair = label == GroupTypeEnum.KVArea and len(group_children) % 2 == 0
+            for index, child in enumerate(group_children):
+                child_ref = str(child.cref)
+                if "texts" in child_ref:
+                    text_index = int(child_ref.split("/")[2])
+                    text_obj = texts[text_index]
+                    final_text = text_obj.text
+                    if page_no == -1:
+                        meta = text_obj.prov[0]
+                        page_no = meta.page_no
+                    if is_kv_pair:
+                        if index % 2 == 0:
+                            temp_key = final_text
                         else:
-                            parsed_list_group.append(final_text)
-
-                group_output = None
-                if parsed_kv_group:
-                    group_output = ParsedKVGroup(data=parsed_kv_group)
-                if parsed_list_group:
-                    group_output = ParsedListGroup(data=parsed_list_group)
-
-                if page_no > -1 and group_output:
-                    key = str(page_no)
-                    if not output.get(key, []):
-                        output[key] = ParsedGroups(
-                            meta=BaseMeta(page_number=key), data=[group_output]
-                        )
+                            parsed_kv_group[temp_key] = final_text
                     else:
-                        output[key].data.append(group_output)
-        except Exception as e:
-            logger.error("Failed to parse groups: %s", e)
+                        parsed_list_group.append(final_text)
+
+            group_output = None
+            if parsed_kv_group:
+                group_output = ParsedKVGroup(data=parsed_kv_group)
+            if parsed_list_group:
+                group_output = ParsedListGroup(data=parsed_list_group)
+
+            if page_no > -1 and group_output:
+                key = str(page_no)
+                if not output.get(key, []):
+                    output[key] = ParsedGroups(
+                        meta=BaseMeta(page_number=key), data=[group_output]
+                    )
+                else:
+                    output[key].data.append(group_output)
 
         return output
 
     def parse_tables(self, tables: list[TableItem]) -> dict[str, list[ParsedTable]]:
         output = {}
-        try:
-            for table in tables:
-                meta = table.prov[0]
-                table_data = table.data
-                page_no = str(meta.page_no)
-                output_for_page = output.get(page_no, [])
-                table_meta = BaseMeta(page_number=page_no)
-                table_output = ParsedTable(meta=table_meta, data=[])
-                for index, grid in enumerate(table_data.grid):
-                    row_number = index
-                    row_bbox = BoundingBox(
-                        left=float("inf"),
-                        top=float("inf"),
-                        right=float("-inf"),
-                        bottom=float("-inf"),
-                        coord_origin=CoordOriginEnum.TOPLEFT,
-                    )
-                    table_row_meta = TableRowMeta(bbox=row_bbox, raw_row_idx=row_number)
-                    table_row = TableRow(meta=table_row_meta, data=[])
-                    for cell in grid:
-                        cell_data = cell.text
-                        cell_bbox = cell.bbox
-                        if cell_data and cell_bbox:
-                            if table_row_meta.row_section is None:
-                                table_row_meta.row_section = cell.row_section
-                            if table_row_meta.row_header is None:
-                                table_row_meta.row_header = cell.row_header
-                            if table_row_meta.column_header is None:
-                                table_row_meta.column_header = cell.column_header
-                            table_row.data.append(cell_data)
-                            # To get the bounding box of the row, we need to collate the
-                            # boxes of each cell in a row. We take min of left and top
-                            # coords and max of bottom and right coords
-                            row_bbox.left = min(row_bbox.left, cell_bbox.l)
-                            row_bbox.top = min(row_bbox.top, cell_bbox.t)
-                            row_bbox.right = max(row_bbox.right, cell_bbox.r)
-                            row_bbox.bottom = max(row_bbox.bottom, cell_bbox.b)
-                    table_row_meta.bbox = row_bbox
-                    table_output.data.append(table_row)
-                output_for_page.append(table_output)
-                output[page_no] = output_for_page
-        except Exception as e:
-            logger.error("Failed to parse tables: %s", e)
+        for table in tables:
+            meta = table.prov[0]
+            table_data = table.data
+            page_no = str(meta.page_no)
+            output_for_page = output.get(page_no, [])
+            table_meta = BaseMeta(page_number=page_no)
+            table_output = ParsedTable(meta=table_meta, data=[])
+            for index, grid in enumerate(table_data.grid):
+                row_number = index
+                row_bbox = BoundingBox(
+                    left=float("inf"),
+                    top=float("inf"),
+                    right=float("-inf"),
+                    bottom=float("-inf"),
+                    coord_origin=CoordOriginEnum.TOPLEFT,
+                )
+                table_row_meta = TableRowMeta(bbox=row_bbox, raw_row_idx=row_number)
+                table_row = TableRow(meta=table_row_meta, data=[])
+                for cell in grid:
+                    cell_data = cell.text
+                    cell_bbox = cell.bbox
+                    if cell_data and cell_bbox:
+                        if table_row_meta.row_section is None:
+                            table_row_meta.row_section = cell.row_section
+                        if table_row_meta.row_header is None:
+                            table_row_meta.row_header = cell.row_header
+                        if table_row_meta.column_header is None:
+                            table_row_meta.column_header = cell.column_header
+                        table_row.data.append(cell_data)
+                        # To get the bounding box of the row, we need to collate the
+                        # boxes of each cell in a row. We take min of left and top
+                        # coords and max of bottom and right coords
+                        row_bbox.left = min(row_bbox.left, cell_bbox.l)
+                        row_bbox.top = min(row_bbox.top, cell_bbox.t)
+                        row_bbox.right = max(row_bbox.right, cell_bbox.r)
+                        row_bbox.bottom = max(row_bbox.bottom, cell_bbox.b)
+                table_row_meta.bbox = row_bbox
+                table_output.data.append(table_row)
+            output_for_page.append(table_output)
+            output[page_no] = output_for_page
         return output
 
     async def extract(self, file: UploadFile) -> ExtractionResponse:
@@ -200,43 +188,40 @@ class DoclingExtractionProvider(ExtractionProvider):
         self, raw_extraction_data: DoclingDocument
     ) -> ExtractionResponse:
         output = ExtractionResponse()
-        try:
-            # extract objects from the docling document
-            pages = raw_extraction_data.pages
-            groups = raw_extraction_data.groups
-            texts = raw_extraction_data.texts
-            tables = raw_extraction_data.tables
+        # extract objects from the docling document
+        pages = raw_extraction_data.pages
+        groups = raw_extraction_data.groups
+        texts = raw_extraction_data.texts
+        tables = raw_extraction_data.tables
 
-            # parse raw objects to ExtractionResponse format
-            groups = self.parse_groups(groups, texts)
-            section_headers = self.parse_section_headers(texts)
-            tables = self.parse_tables(tables)
+        # parse raw objects to ExtractionResponse format
+        groups = self.parse_groups(groups, texts)
+        section_headers = self.parse_section_headers(texts)
+        tables = self.parse_tables(tables)
 
-            # loop through the pages to create output object
-            for key, values in pages.items():
-                skip_key = True
-                str_page_no = str(key)
-                page_size = PageSize(
-                    width=values.size.width,
-                    height=values.size.height,
+        # loop through the pages to create output object
+        for key, values in pages.items():
+            skip_key = True
+            str_page_no = str(key)
+            page_size = PageSize(
+                width=values.size.width,
+                height=values.size.height,
+            )
+            page_output = Page(
+                meta=PageMeta(
+                    size=page_size,
+                    page_number=str_page_no,
                 )
-                page_output = Page(
-                    meta=PageMeta(
-                        size=page_size,
-                        page_number=str_page_no,
-                    )
-                )
-                if str_page_no in section_headers:
-                    skip_key = False
-                    page_output.section_headers = section_headers.get(str_page_no, [])
-                if str_page_no in groups:
-                    skip_key = False
-                    page_output.groups = groups.get(str_page_no, None)
-                if str_page_no in tables:
-                    skip_key = False
-                    page_output.tables = tables.get(str_page_no, [])
-                if not skip_key:
-                    output[str_page_no] = page_output
-        except Exception as e:
-            logger.error("Failed to normalise output: %s", e)
+            )
+            if str_page_no in section_headers:
+                skip_key = False
+                page_output.section_headers = section_headers.get(str_page_no, [])
+            if str_page_no in groups:
+                skip_key = False
+                page_output.groups = groups.get(str_page_no, None)
+            if str_page_no in tables:
+                skip_key = False
+                page_output.tables = tables.get(str_page_no, [])
+            if not skip_key:
+                output[str_page_no] = page_output
         return output
