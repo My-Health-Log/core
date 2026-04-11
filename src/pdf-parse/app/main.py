@@ -1,10 +1,12 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.exception_handlers import api_exception_handler
 from app.routers import extract, health
 from app.services.provider import get_provider
 
@@ -38,5 +40,11 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+# Register exception handlers
+app.add_exception_handler(HTTPException, api_exception_handler)
+app.add_exception_handler(RequestValidationError, api_exception_handler)
+app.add_exception_handler(Exception, api_exception_handler)
+
+# Register routes
 app.include_router(extract.router)
 app.include_router(health.router)
