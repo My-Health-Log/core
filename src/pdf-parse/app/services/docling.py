@@ -179,7 +179,7 @@ class DoclingExtractionProvider(ExtractionProvider):
             raise HTTPException(413, "Please use files under 5 MB")
         content = await file.read()
         stream = DocumentStream(name=file.filename or "", stream=BytesIO(content))
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         result = await loop.run_in_executor(None, self.converter.convert, stream)
         doc = result.document
         return await self.normalise_extraction(doc)
