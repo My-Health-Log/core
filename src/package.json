@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "postinstall": "[ \"$CI\" = 'true' ] || (cd pdf-parse && uv sync)",
+    "postinstall": "[ \"$CI\" = 'true' ] || (command -v uv >/dev/null 2>&1 && cd pdf-parse && uv sync || echo 'uv not found; skipping Python deps sync')",
     "dev": "pnpm --parallel --filter '*' dev & pnpm dev:pdf-parse",
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
