@@ -190,6 +190,7 @@ class DoclingExtractionProvider(ExtractionProvider):
             raise HTTPException(413, "Please use files under 5 MB")
         content = await file.read()
         stream = DocumentStream(name=file.filename or "", stream=BytesIO(content))
+        # TODO: move to run_in_executor to avoid blocking the event loop (#16)
         result = self.converter.convert(stream)
         doc = result.document
         return await self.normalise_extraction(doc)
