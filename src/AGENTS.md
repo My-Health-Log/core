@@ -44,8 +44,8 @@ pnpm install              # Install all deps (Node + Python via postinstall)
 pnpm dev                  # Run server + client in parallel
 pnpm dev:server           # Server only
 pnpm dev:client           # Client only
-pnpm pdf:dev              # PDF parsing service (dev mode)
-pnpm pdf:start            # PDF parsing service (production)
+pnpm dev:pdf-parse        # PDF parsing service (dev mode)
+pnpm start:pdf-parse      # PDF parsing service (production)
 pnpm test                 # Run all tests
 pnpm build                # Build all packages
 
