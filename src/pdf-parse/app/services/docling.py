@@ -185,7 +185,7 @@ class DoclingExtractionProvider(ExtractionProvider):
 
     async def extract(self, file: UploadFile) -> ExtractionResponse:
         if file.size is None or file.filename is None:
-            raise HTTPException(404, "Please use a valid file")
+            raise HTTPException(400, "Please use a valid file")
         if file.size > 5 * 1024 * 1024:
             raise HTTPException(413, "Please use files under 5 MB")
         content = await file.read()
