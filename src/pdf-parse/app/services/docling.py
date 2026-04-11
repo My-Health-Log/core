@@ -13,7 +13,6 @@ from docling_core.types.doc.labels import DocItemLabel
 from docling_core.types.io import DocumentStream
 from fastapi import HTTPException, UploadFile
 
-# from app.schemas.extract import ExtractionResponse
 from app.schemas.docling import DoclingGroups, DoclingTexts
 from app.schemas.extract import (
     BaseMeta,
