@@ -52,3 +52,11 @@ jobs:
       - name: Lint (Python)
         working-directory: src/pdf-parse
         run: uvx ruff check .
+
+      - name: Type check (Python)
+        working-directory: src/pdf-parse
+        run: uv run pyright
+
+      - name: Type check (Node.js)
+        working-directory: src
+        run: pnpm tsc --noEmit
