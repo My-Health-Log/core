@@ -5,9 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel --filter '*' dev",
+    "postinstall": "[ \"$CI\" = 'true' ] || (command -v uv >/dev/null 2>&1 && cd pdf-parse && uv sync || echo 'uv not found; skipping Python deps sync')",
+    "dev": "pnpm --parallel --filter '*' dev & pnpm dev:pdf-parse",
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
+    "dev:pdf-parse": "cd pdf-parse && uv run fastapi dev app/main.py",
+    "start:pdf-parse": "cd pdf-parse && uv run fastapi run app/main.py",
     "test": "pnpm --recursive test",
     "build": "pnpm --recursive build",
     "format": "prettier --write .",
@@ -19,14 +22,14 @@
   "license": "ISC",
   "packageManager": "pnpm@10.25.0",
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/node": "^25.0.0",
-    "eslint": "^9.39.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^16.5.0",
-    "prettier": "^3.7.4",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.4"
+    "typescript-eslint": "^8.57.1"
   }
 }

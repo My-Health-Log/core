@@ -8,6 +8,11 @@
   ```
 - **Node.js 24.12.0+** - Installed via nvm (see below)
 - **pnpm 10.13.1** - Install via `corepack enable && corepack prepare pnpm@10.13.1 --activate`
+- **Python 3.13+** - Required for PDF parsing service
+- **uv** - Python package manager. Install via:
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
 
 ## Getting Started
 
@@ -36,9 +41,11 @@ Run from `src/` (workspace root):
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start server and client in parallel |
+| `pnpm dev` | Start server, client, and PDF service in parallel |
 | `pnpm dev:server` | Start server only |
 | `pnpm dev:client` | Start client only |
+| `pnpm dev:pdf-parse` | Start PDF parsing service (dev mode) |
+| `pnpm start:pdf-parse` | Start PDF parsing service (production) |
 | `pnpm build` | Build all packages |
 | `pnpm test` | Run all tests |
 | `pnpm lint` | Lint all packages |
@@ -72,11 +79,19 @@ core/
     │   ├── package.json
     │   ├── tsconfig.json
     │   └── eslint.config.js
-    └── client/             # @mhl/client - React app
-        ├── src/
-        ├── package.json
-        ├── tsconfig.json
-        └── eslint.config.js
+    ├── client/             # @mhl/client - React app
+    │   ├── src/
+    │   ├── package.json
+    │   ├── tsconfig.json
+    │   └── eslint.config.js
+    └── pdf-parse/          # Python PDF extraction service
+        ├── app/
+        │   ├── main.py
+        │   ├── routers/
+        │   ├── services/
+        │   └── schemas/
+        ├── pyproject.toml  # uv project config
+        └── uv.lock         # Python lockfile
 ```
 
 ## API Keys
@@ -98,6 +113,13 @@ core/
 |--------|------|-------------|
 | GET | `/health/ping` | Health check - returns `{"pong":"it worked!"}` |
 | GET | `/health/ai` | AI SDK health check - verifies Gemini integration |
+
+### PDF Service (localhost:8000)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Health check |
+| POST | `/extract` | Extract content from PDF (multipart/form-data) |
 
 ### Client (localhost:5173)
 
@@ -122,4 +144,32 @@ pnpm install
 ```bash
 nvm install  # Install version from .nvmrc (first time)
 nvm use      # Switch to version from .nvmrc
+```
+
+### Python/uv issues
+
+```bash
+# Verify uv is installed
+uv --version
+
+# If pdf-parse deps fail, manually sync
+cd src/pdf-parse
+uv sync
+
+# If Python version mismatch
+uv python install 3.13
+
+# Type checking (optional) - uses pyproject.toml config
+npx pyright src/pdf-parse
+```
+
+### PDF service won't start
+
+```bash
+# Check if port 8000 is in use
+lsof -i :8000
+
+# Run with explicit host/port
+cd src/pdf-parse
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```

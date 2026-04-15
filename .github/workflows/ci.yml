@@ -27,14 +27,41 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: src/pnpm-lock.yaml
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "src/pdf-parse/uv.lock"
+
       - name: Install dependencies
         working-directory: src
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
+      - name: Check formatting (Node.js)
         working-directory: src
         run: pnpm format:check
 
-      - name: Lint
+      - name: Lint (Node.js)
         working-directory: src
         run: pnpm lint
+
+      - name: Check formatting (Python)
+        working-directory: src/pdf-parse
+        run: uvx ruff format --check .
+
+      - name: Lint (Python)
+        working-directory: src/pdf-parse
+        run: uvx ruff check .
+
+      - name: Type check (Python)
+        working-directory: src/pdf-parse
+        run: uv run pyright
+
+      # TODO: fix pre-existing TS import error in server before enabling
+      # - name: Type check (Node.js - server)
+      #   working-directory: src/server
+      #   run: npx tsc --noEmit
+
+      - name: Type check (Node.js - client)
+        working-directory: src/client
+        run: npx tsc --noEmit
